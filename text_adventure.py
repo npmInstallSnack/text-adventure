@@ -141,9 +141,46 @@ def gameloop(prompt):
 #def attack(command)
     # blah balh bulh ahbul habul hubal howabble bowarb humbug
 
-# Jack's ppr
+rooms = {
+    "hut": {
+        "description": "You are inside your small hut. Your journey begins here.",
+        "exits": {"north": "forest_path"}
+    },
+    "forest_path": {
+        "description": "You are on a forest path. Goblins roam nearby.",
+        "exits": {
+            "south": "hut",
+            "north": "guard_outpost",
+            "west": "cave",
+            "east": "village"
+        }
+    },
+    "cave": {
+        "description": "You are inside a dark cave. You can use your torch to see.",
+        "exits": {"east": "forest_path"}
+    },
+    "village": {
+        "description": "You are in a village. There is a blacksmith, a potion shop, a tavern, and a general store.",
+        "exits": {"west": "forest_path"}
+    },
+    "guard_outpost": {
+        "description": "You are at a guarded outpost. An orc stands watch.",
+        "exits": {
+            "south": "forest_path",
+            "north": "castle"
+        }
+    },
+    "castle": {
+        "description": "You have reached Groluth's Castle. Groluth awaits.",
+        "exits": {"south": "guard_outpost"}
+    }
+}
 
-# def move(command)
-# blah balh bulh ahbul habul hubal howabble bowarb humbug
+current_room = "hut"
+
+# Jack's ppr
+def move(Diection):
+    global current_room
+
 
 gameloop('There are two goblins and an orc')
