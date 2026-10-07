@@ -4,10 +4,15 @@
 # Purpose: To create a fun text adventure game
 
 player = ""
+
+Class Enemy:
+    def __init__(name, hp):
+        self.name = name
+        self.hp = hp
 enemies = [
-    {"name": "goblin", "hp": 3},
-    {"name": "goblin", "hp": 3},
-    {"name": "orc", "hp": 8},
+    Class("goblin", 3)
+    Class("goblin", 3)
+    Class("orc", 8)
 ]
 inventory = ["iron sword", "torch"]
 
@@ -79,7 +84,7 @@ def parse(text):
             break
 
     action = result["action"]
-    enemy_names = [e["name"] if isinstance(e, dict) else e for e in enemies]
+    enemy_names = [e.name for e in enemies]
 
     if action == "attack":
         if not target_words:
