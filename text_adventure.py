@@ -2,14 +2,17 @@
 # Date Created: 9/24/26
 # Date Modified: 9/25/26
 # Purpose: To create a fun text adventure game
-
+import time
 player = ""
+player_hp = 20
 enemies = [
-    {"name": "goblin", "hp": 3},
-    {"name": "goblin", "hp": 3},
-    {"name": "orc", "hp": 8},
+    {"name": "goblin", "hp": 3, "damage": 1},
+    {"name": "goblin", "hp": 3, "damage": 1},
+    {"name": "orc", "hp": 8, "damage": 3},
 ]
-inventory = ["iron sword", "torch"]
+inventory = [
+    {"weapon": "iron sword", "damage": 2}
+]
 
 # Code by Claude Code
 
@@ -118,25 +121,94 @@ def parse(text):
 
 def tutorial():
     print("Welcome to the game")
-    gameloop("")
+    gameloop("There are two goblins and an orc here.")
+
 def gameloop(prompt):
     global enemies
     global inventory
     global player
     print(prompt)
-    player = input("Choose an action: ")
-    command = parse(player)
-    print(command)
-    if command['action'] == 'attack':
-        print("You attack the " + str(command["target"]) + ' with your ' + str(command["item"]))
-        #attack(command)
-    if command['action'] == 'move':
-        print("You move " + str(command["target"]))
-        #move(command['target'])
-    if command['action'] == 'inventory':
-        print("Your inventory:", inventory)
 
+    while True:
+        player_input = input("\nChoose an action: ")
+        command = parse(player_input)
+
+        if not command['action']:
+            print("I don't understand that command. Try 'attack goblin' or 'quit'.")
+            continue
+
+        if command['action'] == 'quit':
+            print("Thanks for playing!")
+            break
+
+        elif command['action'] == 'attack':
+            attack(command)
+
+        elif command['action'] == 'move':
+            print("You move " + str(command["target"]))
+            # move(command['target'])
 # Woody's ppr
+def attack(command):
+    global enemies
+    global player_hp
+    global inventory
+
+    target_name = command['target']
+
+    # Locate enemy to attack
+    current_enemy = None
+    for e in enemies:
+        if e["name"] == target_name and e["hp"] > 0:
+            current_enemy = e
+            break
+
+    if current_enemy is None:
+        print(f"There is no living {target_name} here to attack!")
+        return
+
+    # Pick players weapon and damage
+    weapon_used = command['item']
+    player_damage = 1  # Default unarmed damage (punches!)
+    weapon_name = "fists"
+
+
+    if isinstance(weapon_used, dict):
+        player_damage = weapon_used.get("damage", 1)
+        weapon_name = weapon_used.get("weapon", "weapon")
+    elif inventory:
+        # Use whatever is in inventory if unclear
+        player_damage = inventory[0]["damage"]
+        weapon_name = inventory[0]["weapon"]
+
+    print(f"\n--- BATTLE START: Player vs {current_enemy['name'].upper()} ---")
+
+    # Battle keeps looping till something dies
+    while current_enemy["hp"] > 0 and player_hp > 0:
+
+        # Players turn
+        time.sleep(1)  # Add small delay for stylistic pleasure
+        print(f"\nYou attack the {current_enemy['name']} with your {weapon_name}!")
+        current_enemy["hp"] -= player_damage
+        print(f"You dealt {player_damage} damage! The {current_enemy['name']} has {current_enemy['hp']} HP left.")
+
+        # Check if enemy died
+        if current_enemy["hp"] <= 0:
+            print(f"*** You defeated the {current_enemy['name']}! ***")
+            break  # Break out of the battle
+
+        # enemy turn
+        time.sleep(1.5)
+        print(f"\nThe {current_enemy['name']} attacks you!")
+        player_hp -= current_enemy["damage"]
+        print(f"It dealt {current_enemy['damage']} damage! You have {player_hp} HP left.")
+
+        # Check if you died
+        if player_hp <= 0:
+            print("\n*** You have been defeated... GAME OVER ***")
+            exit()  # Ends the python thing
+
+        time.sleep(1.5)
+        print("-" * 30)
 
 #def attack(command)
     # blah balh bulh ahbul habul hubal howabble bowarb humbug
