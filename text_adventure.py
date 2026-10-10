@@ -1,6 +1,6 @@
 # Authors: Kahekili Spears, Woody Churchward, & Jack O'Brien
 # Date Created: 9/24/26
-# Date Modified: 9/25/26
+# Date Modified: 10/10/26
 # Purpose: To create a fun text adventure game
 import time
 import random
@@ -170,7 +170,7 @@ def attack(command):
 
     # Pick players weapon and damage
     weapon_used = command['item']
-    player_damage = 1  # Default unarmed damage (punches!)
+    player_damage = 1  # Default damages, no weapon
     weapon_name = "fists"
 
 
@@ -221,9 +221,8 @@ def attack(command):
         time.sleep(1.5)
         print("-" * 30)
 
-#def attack(command)
-    # blah balh bulh ahbul habul hubal howabble bowarb humbug
 
+#Jacks ppr
 rooms = {
     "hut": {
         "description": "You are inside your small hut. Your journey begins here.",
