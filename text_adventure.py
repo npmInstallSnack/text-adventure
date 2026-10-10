@@ -3,12 +3,14 @@
 # Date Modified: 9/25/26
 # Purpose: To create a fun text adventure game
 import time
+import random
 player = ""
 player_hp = 20
+player_evasion = 15 #15% chance to dodge the attack
 enemies = [
-    {"name": "goblin", "hp": 3, "damage": 1},
-    {"name": "goblin", "hp": 3, "damage": 1},
-    {"name": "orc", "hp": 8, "damage": 3},
+    {"name": "goblin", "hp": 3, "damage": 1, "evasion": 30},
+    {"name": "goblin", "hp": 3, "damage": 1, "evasion": 30},
+    {"name": "orc", "hp": 8, "damage": 3, "evasion": 10},
 ]
 inventory = [
     {"weapon": "iron sword", "damage": 2}
@@ -188,8 +190,13 @@ def attack(command):
         # Players turn
         time.sleep(1)  # Add small delay for stylistic pleasure
         print(f"\nYou attack the {current_enemy['name']} with your {weapon_name}!")
-        current_enemy["hp"] -= player_damage
-        print(f"You dealt {player_damage} damage! The {current_enemy['name']} has {current_enemy['hp']} HP left.")
+        # Roll a number between 1 and 100. If it's less than or equal to evasion, it's a dodge!
+        if random.randint(1, 100) <= current_enemy.get("evasion", 0):
+            print(f"The {current_enemy['name']} dodged your attack!")
+        else:
+            current_enemy["hp"] -= player_damage
+            print(f"You dealt {player_damage} damage! The {current_enemy['name']} has {current_enemy['hp']} HP left.")
+
 
         # Check if enemy died
         if current_enemy["hp"] <= 0:
@@ -199,8 +206,12 @@ def attack(command):
         # enemy turn
         time.sleep(1.5)
         print(f"\nThe {current_enemy['name']} attacks you!")
-        player_hp -= current_enemy["damage"]
-        print(f"It dealt {current_enemy['damage']} damage! You have {player_hp} HP left.")
+        # Check if the player dodges
+        if random.randint(1, 100) <= player_evasion:
+            print(f"You dodged the {current_enemy['name']}'s attack!")
+        else:
+            player_hp -= current_enemy["damage"]
+            print(f"It dealt {current_enemy['damage']} damage! You have {player_hp} HP left.")
 
         # Check if you died
         if player_hp <= 0:
