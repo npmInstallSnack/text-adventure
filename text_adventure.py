@@ -2,16 +2,20 @@
 # Date Created: 9/24/26
 # Date Modified: 10/10/26
 # Purpose: To create a fun text adventure game
+
 import time
 import random
+
 player = ""
 player_hp = 20
 player_evasion = 15 #15% chance to dodge the attack
+
 enemies = [
     {"name": "goblin", "hp": 3, "damage": 1, "evasion": 30},
     {"name": "goblin", "hp": 3, "damage": 1, "evasion": 30},
     {"name": "orc", "hp": 8, "damage": 3, "evasion": 10},
 ]
+
 inventory = [
     {"weapon": "iron sword", "damage": 2}
 ]
@@ -59,7 +63,7 @@ def parse(text):
     global inventory
     global player
 
-    result = {"action": None, "target": None, "item": None}
+    result = {"action": None, "target": None, "item": None, "error": None}
 
     words = [w.strip(".,!?;:'\"") for w in text.lower().split()]
     words = [w for w in words if w and w not in FILLER]
@@ -119,110 +123,8 @@ def parse(text):
 
     return result
 
-# Kahekili's ppr
 
-def tutorial():
-    print("Welcome to the game")
-    gameloop("There are two goblins and an orc here.")
-
-def gameloop(prompt):
-    global enemies
-    global inventory
-    global player
-    print(prompt)
-
-    while True:
-        player_input = input("\nChoose an action: ")
-        command = parse(player_input)
-
-        if not command['action']:
-            print("I don't understand that command. Try 'attack goblin' or 'quit'.")
-            continue
-
-        if command['action'] == 'quit':
-            print("Thanks for playing!")
-            break
-
-        elif command['action'] == 'attack':
-            attack(command)
-
-        elif command['action'] == 'move':
-            print("You move " + str(command["target"]))
-            # move(command['target'])
-# Woody's ppr
-def attack(command):
-    global enemies
-    global player_hp
-    global inventory
-
-    target_name = command['target']
-
-    # Locate enemy to attack
-    current_enemy = None
-    for e in enemies:
-        if e["name"] == target_name and e["hp"] > 0:
-            current_enemy = e
-            break
-
-    if current_enemy is None:
-        print(f"There is no living {target_name} here to attack!")
-        return
-
-    # Pick players weapon and damage
-    weapon_used = command['item']
-    player_damage = 1  # Default damages, no weapon
-    weapon_name = "fists"
-
-
-    if isinstance(weapon_used, dict):
-        player_damage = weapon_used.get("damage", 1)
-        weapon_name = weapon_used.get("weapon", "weapon")
-    elif inventory:
-        # Use whatever is in inventory if unclear
-        player_damage = inventory[0]["damage"]
-        weapon_name = inventory[0]["weapon"]
-
-    print(f"\n--- BATTLE START: Player vs {current_enemy['name'].upper()} ---")
-
-    # Battle keeps looping till something dies
-    while current_enemy["hp"] > 0 and player_hp > 0:
-
-        # Players turn
-        time.sleep(1)  # Add small delay for stylistic pleasure
-        print(f"\nYou attack the {current_enemy['name']} with your {weapon_name}!")
-        # Roll a number between 1 and 100. If it's less than or equal to evasion, it's a dodge!
-        if random.randint(1, 100) <= current_enemy.get("evasion", 0):
-            print(f"The {current_enemy['name']} dodged your attack!")
-        else:
-            current_enemy["hp"] -= player_damage
-            print(f"You dealt {player_damage} damage! The {current_enemy['name']} has {current_enemy['hp']} HP left.")
-
-
-        # Check if enemy died
-        if current_enemy["hp"] <= 0:
-            print(f"*** You defeated the {current_enemy['name']}! ***")
-            break  # Break out of the battle
-
-        # enemy turn
-        time.sleep(1.5)
-        print(f"\nThe {current_enemy['name']} attacks you!")
-        # Check if the player dodges
-        if random.randint(1, 100) <= player_evasion:
-            print(f"You dodged the {current_enemy['name']}'s attack!")
-        else:
-            player_hp -= current_enemy["damage"]
-            print(f"It dealt {current_enemy['damage']} damage! You have {player_hp} HP left.")
-
-        # Check if you died
-        if player_hp <= 0:
-            print("\n*** You have been defeated... GAME OVER ***")
-            exit()  # Ends the python thing
-
-        time.sleep(1.5)
-        print("-" * 30)
-
-
-#Jacks ppr
+# Rooms code
 rooms = {
     "hut": {
         "description": "You are inside your small hut. Your journey begins here.",
@@ -260,9 +162,138 @@ rooms = {
 
 current_room = "hut"
 
+
+# Kahekili's ppr
+
+def tutorial():
+    print("Welcome to the game")
+    gameloop("There are two goblins and an orc here.")
+
+
+def gameloop(prompt):
+    global enemies
+    global inventory
+    global player
+
+    print(prompt)
+
+    while True:
+        player_input = input("\nChoose an action: ")
+        command = parse(player_input)
+
+        if not command['action']:
+            print("I don't understand that command. Try 'attack goblin' or 'quit'.")
+            continue
+
+        if command['action'] == 'quit':
+            print("Thanks for playing!")
+            break
+
+        elif command['action'] == 'attack':
+            attack(command)
+
+        elif command['action'] == 'move':
+            print("You move " + str(command["target"]))
+            # move(command['target'])
+
+
 # Jack's ppr
-def move(Diection):
+
+def move(direction):
     global current_room
+    exits = rooms[current_room]["exits"]
+    if direction in exits:
+        current_room = exits[direction]
+        print(rooms[current_room]["description"])
+    else:
+        print("You can't go that way")
+
+#restart
+def restart():
+    global player_hp, enemies, inventory, current_room
+
+    player_hp = 20
+    enemies = [
+        {"name": "goblin", "hp": 3, "damage": 1, "evasion": 30},
+        {"name": "goblin", "hp": 3, "damage": 1, "evasion": 30},
+        {"name": "orc", "hp": 8, "damage": 3, "evasion": 10},
+    ]
+    inventory = [{"weapon": "iron sword", "damage": 2}]
+    current_room = "hut"
+
+    print("Your adventure has restarted!")
+
+# Woody's ppr
+
+def attack(command):
+    global enemies
+    global player_hp
+    global inventory
+
+    target_name = command['target']
+
+    # Locate enemy to attack
+    current_enemy = None
+    for e in enemies:
+        if e["name"] == target_name and e["hp"] > 0:
+            current_enemy = e
+            break
+
+    if current_enemy is None:
+        print(f"There is no living {target_name} here to attack!")
+        return
+
+    # Pick players weapon and damage
+    weapon_used = command['item']
+    player_damage = 1  # Default damages, no weapon
+    weapon_name = "fists"
+
+    if isinstance(weapon_used, dict):
+        player_damage = weapon_used.get("damage", 1)
+        weapon_name = weapon_used.get("weapon", "weapon")
+    elif inventory:
+        # Use whatever is in inventory if unclear
+        player_damage = inventory[0]["damage"]
+        weapon_name = inventory[0]["weapon"]
+
+    print(f"\n--- BATTLE START: Player vs {current_enemy['name'].upper()} ---")
+
+    # Battle keeps looping till something dies
+    while current_enemy["hp"] > 0 and player_hp > 0:
+
+        # Players turn
+        time.sleep(1)  # Add small delay for stylistic pleasure
+        print(f"\nYou attack the {current_enemy['name']} with your {weapon_name}!")
+        # Roll a number between 1 and 100. If it's less than or equal to evasion, it's a dodge!
+        if random.randint(1, 100) <= current_enemy.get("evasion", 0):
+            print(f"The {current_enemy['name']} dodged your attack!")
+        else:
+            current_enemy["hp"] = int(current_enemy["hp"]) - int(player_damage)
+            print(f"You dealt {player_damage} damage! The {current_enemy['name']} has {current_enemy['hp']} HP left.")
+
+        # Check if enemy died
+        if current_enemy["hp"] <= 0:
+            print(f"*** You defeated the {current_enemy['name']}! ***")
+            break  # Break out of the battle
+
+        # enemy turn
+        time.sleep(1.5)
+        print(f"\nThe {current_enemy['name']} attacks you!")
+        # Check if the player dodges
+        if random.randint(1, 100) <= player_evasion:
+            print(f"You dodged the {current_enemy['name']}'s attack!")
+        else:
+            player_hp -= current_enemy["damage"]
+            print(f"It dealt {current_enemy['damage']} damage! You have {player_hp} HP left.")
+
+        # Check if you died
+        if player_hp <= 0:
+            print("\n*** You have been defeated... GAME OVER ***")
+            restart()  # Ends the python thing
+
+        time.sleep(1.5)
+        print("-" * 30)
 
 
+# Start the game
 gameloop('There are two goblins and an orc')
