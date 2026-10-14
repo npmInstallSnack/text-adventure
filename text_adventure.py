@@ -343,13 +343,7 @@ def attack(command):
   global player_hp
   global inventory
 
-
-
-
   target_name = command['target']
-
-
-
 
   # Locate enemy to attack
   current_enemy = None
@@ -358,24 +352,14 @@ def attack(command):
           current_enemy = e
           break
 
-
-
-
   if current_enemy is None:
       print(f"There is no living {target_name} here to attack!")
       return
-
-
-
 
   # Pick players weapon and damage
   weapon_used = command['item']
   player_damage = 1  # Default damages, no weapon
   weapon_name = "fists"
-
-
-
-
   if isinstance(weapon_used, dict):
       player_damage = weapon_used.get("damage", 1)
       weapon_name = weapon_used.get("weapon", "weapon")
@@ -384,19 +368,11 @@ def attack(command):
       player_damage = inventory[0]["damage"]
       weapon_name = inventory[0]["weapon"]
 
-
-
-
   print(f"\n--- BATTLE START: Player vs {current_enemy['name'].upper()} ---")
-
-
 
 
   # Battle keeps looping till something dies
   while current_enemy["hp"] > 0 and player_hp > 0:
-
-
-
 
       # Players turn
       time.sleep(1)  # Add small delay for stylistic pleasure
@@ -407,17 +383,10 @@ def attack(command):
       else:
           current_enemy["hp"] = int(current_enemy["hp"]) - int(player_damage)
           print(f"You dealt {player_damage} damage! The {current_enemy['name']} has {current_enemy['hp']} HP left.")
-
-
-
-
       # Check if enemy died
       if current_enemy["hp"] <= 0:
           print(f"*** You defeated the {current_enemy['name']}! ***")
           break  # Break out of the battle
-
-
-
 
       # enemy turn
       time.sleep(1.5)
@@ -435,7 +404,7 @@ def attack(command):
       # Check if you died
       if player_hp <= 0:
           print("\n*** You have been defeated... GAME OVER ***")
-          restart()  # Ends the python thing
+          break  # Ends the python thing
 
 
 
