@@ -17,6 +17,7 @@ enemies = [
    {"name": "goblin", "hp": 3, "damage": 1, "evasion": 30},
    {"name": "goblin", "hp": 3, "damage": 1, "evasion": 30},
    {"name": "orc", "hp": 8, "damage": 3, "evasion": 10},
+   {"name": "groluth", "hp": 20, "damage": 5, "evasion": 50},
 ]
 
 
