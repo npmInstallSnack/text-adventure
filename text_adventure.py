@@ -15,7 +15,7 @@ import random
 player = ""
 player_hp = 20
 player_evasion = 15 #15% chance to dodge the attack
-
+rubies = 7
 
 
 
@@ -24,7 +24,6 @@ enemies = [
   {"name": "goblin", "hp": 3, "damage": 1, "evasion": 30},
   {"name": "orc", "hp": 8, "damage": 3, "evasion": 10},
   {"name": "groluth", "hp": 20, "damage": 5, "evasion": 50},
-
 ]
 
 
@@ -38,9 +37,6 @@ food =[
    {"food": "apple", "heal": 3},
    {"food": "health potion", "heal": 6},
 ]
-
-
-
 
 # Code by Claude Code
 
@@ -61,7 +57,7 @@ VERBS = {
   "drop": "drop", "discard": "drop",
    "eat": "eat", "drink": "eat", "use": "eat", "consume": "eat",
   "inventory": "inventory", "inv": "inventory", "i": "inventory",
-  "help": "help",
+  "buy": "trade", "trade": "trade", "purchase": "trade", "take": "trade",
   "quit": "quit", "exit": "quit",
 }
 
@@ -73,11 +69,6 @@ DIRECTIONS = {
   "e": "east", "east": "east", "w": "west", "west": "west",
   "up": "up", "down": "down", "left": "left", "right": "right"
 }
-
-
-
-
-
 
 
 
@@ -103,7 +94,7 @@ def parse(text):
   global enemies
   global inventory
   global player
-
+  global current_room
 
 
 
@@ -173,7 +164,9 @@ def parse(text):
       else:
           result["item"] = match(inventory, args)
           if result["item"] is None:
-              result["error"] = "unknown_item"
+              result["item"] = match(food, args)
+              if result["item"] is None:
+                result["error"] = "unknown_item"
   elif action == "eat":
       if not args:
           result["error"] = "no_item"
@@ -184,8 +177,6 @@ def parse(text):
               result["error"] = "unknown_item"
           else:
               result["item"] = food[names.index(found)]
-
-
   return result
 # Rooms code
 rooms = {
@@ -203,11 +194,11 @@ rooms = {
       }
   },
   "cave": {
-      "description": "You are inside a dark cave. You can use your torch to see. The forest path lies East.",
+      "description": "You are inside a dark cave. The forest path lies East.",
       "exits": {"east": "forest_path"}
   },
   "village": {
-      "description": "You are in a village. It is bustling with life. It connects with the path to the west.",
+      "description": "You are in a village. It is bustling with life. An armorer and farmer offer you goods. The village connects with the path to the west.",
       "exits": {"west": "forest_path"}
   },
   "guard_outpost": {
@@ -230,9 +221,6 @@ current_room = "hut"
 # Kahekili's ppr
 
 
-new_room = False
-
-
 def tutorial():
   print("You are inside your small hut. Your journey begins here. There is a path leading north.")
   gameloop()
@@ -244,12 +232,13 @@ def gameloop():
   global player
   global current_room
   global rooms
-  global new_room
   global food
   global player_hp
-
+  global rubies
 
   while True:
+      if player_hp <= 0:
+          break
       player_input = input("\n(" + str(player_hp) + " HP) Choose an action: ")
       command = parse(player_input)
       if not command['action']:
@@ -267,15 +256,20 @@ def gameloop():
           if command['item'] is None:
               print("You don't have that.")
           else:
-              print("You drop your " + command['item']['weapon'])
-              inventory.remove(command['item'])
+              if command['item'] in food:
+                  print("You drop your " + command['item']['food'])
+                  food.remove(command['item'])
+              elif command['item'] in inventory:
+                print("You drop your " + command['item']['weapon'])
+                inventory.remove(command['item'])
       elif command['action'] == 'inventory':
-          print("You have " + str(len(inventory)) + " weapons:")
+          print("\nYou have " + str(len(inventory)) + " weapons:")
           for weapon in inventory:
               print(f"- {weapon['weapon']} (damage {weapon['damage']})")
-          print("You have " + str(len(food)) + " consumables:")
+          print("\nYou have " + str(len(food)) + " consumables:")
           for item in food:
               print(f"- {item['food']} (heals {item['heal']} HP)")
+          print("\nYou have " + str(rubies) + " rubies.")
       elif command['action'] == 'eat':
           if command['item'] is None:
               print("You don't have that.")
@@ -283,7 +277,27 @@ def gameloop():
               print("You consume your " + command["item"]["food"] + ", healing " + str(command["item"]["heal"]) + " HP.")
               player_hp += command["item"]["heal"]
               food.remove(command["item"])
+      elif command['action'] == 'trade':
+          if current_room == "village":
+              print("Two craftsmen offer their goods, one a mighty longsword for 9 rubies and the other a baked potato for 5 and a carrot for 2.")
+              purchase = input("What do you purchase? (one at a time)")
+              if "sword" in purchase and rubies >= 9:
+                inventory.append({"weapon": "longsword", "damage": 5})
+                rubies -= 9
+                print("You purchased the mighty longsword, slayer of demons")
+              elif "potato" in purchase and rubies >= 5:
+                food.append({"food": "baked potato", "heal": 9})
+                rubies -= 5
+              elif "carrot" in purchase and rubies >= 2:
+                  food.append({"food": "carrot", "heal": 4})
+                  rubies -= 2
+              elif "no" in purchase or "exit" in purchase or "quit" in purchase:
+                  print("They ask you to come back soon")
+              else:
+                  print("They aren't selling that right now")
 
+          else:
+               print("You can't trade here")
 
 # Jack's ppr
 def move(direction):
@@ -342,8 +356,14 @@ def attack(command):
   global enemies
   global player_hp
   global inventory
+  global rubies
+
+
 
   target_name = command['target']
+
+
+
 
   # Locate enemy to attack
   current_enemy = None
@@ -352,14 +372,24 @@ def attack(command):
           current_enemy = e
           break
 
+
+
+
   if current_enemy is None:
       print(f"There is no living {target_name} here to attack!")
       return
+
+
+
 
   # Pick players weapon and damage
   weapon_used = command['item']
   player_damage = 1  # Default damages, no weapon
   weapon_name = "fists"
+
+
+
+
   if isinstance(weapon_used, dict):
       player_damage = weapon_used.get("damage", 1)
       weapon_name = weapon_used.get("weapon", "weapon")
@@ -368,11 +398,19 @@ def attack(command):
       player_damage = inventory[0]["damage"]
       weapon_name = inventory[0]["weapon"]
 
+
+
+
   print(f"\n--- BATTLE START: Player vs {current_enemy['name'].upper()} ---")
+
+
 
 
   # Battle keeps looping till something dies
   while current_enemy["hp"] > 0 and player_hp > 0:
+
+
+
 
       # Players turn
       time.sleep(1)  # Add small delay for stylistic pleasure
@@ -383,10 +421,19 @@ def attack(command):
       else:
           current_enemy["hp"] = int(current_enemy["hp"]) - int(player_damage)
           print(f"You dealt {player_damage} damage! The {current_enemy['name']} has {current_enemy['hp']} HP left.")
+
+
+
+
       # Check if enemy died
       if current_enemy["hp"] <= 0:
-          print(f"*** You defeated the {current_enemy['name']}! ***")
+          gain = random.randint(2, 4)
+          rubies += gain
+          print(f"*** You defeated the {current_enemy['name']}! You gain {gain} rubies. ***")
           break  # Break out of the battle
+
+
+
 
       # enemy turn
       time.sleep(1.5)
