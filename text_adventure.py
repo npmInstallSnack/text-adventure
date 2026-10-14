@@ -2,33 +2,18 @@
 # Date Created: 9/24/26
 # Date Modified: 10/13/26
 # Purpose: To create a fun text adventure game
-
-
-
-
 import time
 import random
-
-
-
-
 player = ""
 player_hp = 20
 player_evasion = 15 #15% chance to dodge the attack
 rubies = 7
-
-
-
 enemies = [
   {"name": "goblin", "hp": 3, "damage": 1, "evasion": 30},
   {"name": "goblin", "hp": 3, "damage": 1, "evasion": 30},
   {"name": "orc", "hp": 8, "damage": 3, "evasion": 10},
   {"name": "groluth", "hp": 20, "damage": 5, "evasion": 50},
 ]
-
-
-
-
 inventory = [
    {"weapon": "iron sword", "damage": 2},
    {"weapon": "bronze hammer", "damage": 1},
@@ -37,18 +22,9 @@ food =[
    {"food": "apple", "heal": 3},
    {"food": "health potion", "heal": 6},
 ]
-
 # Code by Claude Code
-
-
-
-
 FILLER = {"the", "a", "an", "to", "at", "on", "my", "toward", "towards",
         "up", "some", "that", "this", "around", "through", "I", "then"}
-
-
-
-
 VERBS = {
   "attack": "attack", "hit": "attack", "fight": "attack", "kill": "attack",
   "strike": "attack", "stab": "attack", "slash": "attack", "punch": "attack",
@@ -60,18 +36,11 @@ VERBS = {
   "buy": "trade", "trade": "trade", "purchase": "trade", "take": "trade",
   "quit": "quit", "exit": "quit",
 }
-
-
-
-
 DIRECTIONS = {
   "n": "north", "north": "north", "s": "south", "south": "south",
   "e": "east", "east": "east", "w": "west", "west": "west",
   "up": "up", "down": "down", "left": "left", "right": "right"
 }
-
-
-
 def match(names, words):
   """Return the entry in names that the words refer to, or None.
   Handles plurals ('goblins' -> 'goblin') and partial names ('rusty' -> 'rusty sword')."""
@@ -83,37 +52,19 @@ def match(names, words):
           return name
   return None
 
-
-
-
-
-
-
-
 def parse(text):
   global enemies
   global inventory
   global player
   global current_room
 
-
-
   result = {"action": None, "target": None, "item": None, "error": None}
-
-
-
 
   words = [w.strip(".,!?;:'\"") for w in text.lower().split()]
   words = [w for w in words if w and w not in FILLER]
 
-
-
-
   if not words:
       return result
-
-
-
 
   # A bare direction ("north", "n") counts as moving
   if words[0] in DIRECTIONS:
@@ -123,9 +74,6 @@ def parse(text):
   else:
       return result
 
-
-
-
   # Split "goblin with sword" into target words and item words
   target_words, item_words = args, []
   for marker in ("with", "using"):
@@ -134,13 +82,8 @@ def parse(text):
           target_words, item_words = args[:i], args[i + 1:]
           break
 
-
-
-
   action = result["action"]
   enemy_names = [e["name"] if isinstance(e, dict) else e for e in enemies]
-
-
   if action == "attack":
       if not target_words:
           result["error"] = "no_target"
@@ -152,8 +95,6 @@ def parse(text):
           result["item"] = match(inventory, item_words)
           if result["item"] is None and result["error"] is None:
               result["error"] = "unknown_item"
-
-
   elif action == "move":
       result["target"] = next((DIRECTIONS[w] for w in args if w in DIRECTIONS), None)
       if result["target"] is None:
@@ -214,17 +155,12 @@ rooms = {
   }
 }
 
-
 current_room = "hut"
 
-
 # Kahekili's ppr
-
-
 def tutorial():
   print("You are inside your small hut. Your journey begins here. There is a path leading north.")
   gameloop()
-
 
 def gameloop():
   global enemies
@@ -325,19 +261,15 @@ def move(direction):
 
 #restart
 def restart():
-  global player_hp, enemies, inventory, current_room, food
-
-
-
-
+  global player_hp, enemies, inventory, current_room, food, rubies
   player_hp = 20
+  rubies = 7
   enemies = [
       {"name": "goblin", "hp": 3, "damage": 1, "evasion": 30},
       {"name": "goblin", "hp": 3, "damage": 1, "evasion": 30},
       {"name": "orc", "hp": 8, "damage": 3, "evasion": 10},
+      {"name": "groluth", "hp": 20, "damage": 5, "evasion": 50},
   ]
-
-
   inventory = [
       {"weapon": "iron sword", "damage": 2},
       {"weapon": "bronze hammer", "damage": 1},
@@ -348,57 +280,29 @@ def restart():
   ]
   current_room = "hut"
 
-
-
-
   print("Your adventure has restarted!")
 
-
-
-
 # Woody's ppr
-
-
-
 
 def attack(command):
   global enemies
   global player_hp
   global inventory
   global rubies
-
-
-
   target_name = command['target']
-
-
-
-
   # Locate enemy to attack
   current_enemy = None
   for e in enemies:
       if e["name"] == target_name and e["hp"] > 0:
           current_enemy = e
           break
-
-
-
-
   if current_enemy is None:
       print(f"There is no living {target_name} here to attack!")
       return
-
-
-
-
   # Pick players weapon and damage
   weapon_used = command['item']
   player_damage = 1  # Default damages, no weapon
   weapon_name = "fists"
-
-
-
-
   if isinstance(weapon_used, dict):
       player_damage = weapon_used.get("damage", 1)
       weapon_name = weapon_used.get("weapon", "weapon")
@@ -406,21 +310,9 @@ def attack(command):
       # Use whatever is in inventory if unclear
       player_damage = inventory[0]["damage"]
       weapon_name = inventory[0]["weapon"]
-
-
-
-
   print(f"\n--- BATTLE START: Player vs {current_enemy['name'].upper()} ---")
-
-
-
-
   # Battle keeps looping till something dies
   while current_enemy["hp"] > 0 and player_hp > 0:
-
-
-
-
       # Players turn
       time.sleep(1)  # Add small delay for stylistic pleasure
       print(f"\nYou attack the {current_enemy['name']} with your {weapon_name}!")
@@ -431,19 +323,12 @@ def attack(command):
           current_enemy["hp"] = int(current_enemy["hp"]) - int(player_damage)
           print(f"You dealt {player_damage} damage! The {current_enemy['name']} has {current_enemy['hp']} HP left.")
 
-
-
-
       # Check if enemy died
       if current_enemy["hp"] <= 0:
           gain = random.randint(2, 4)
           rubies += gain
           print(f"*** You defeated the {current_enemy['name']}! You gain {gain} rubies. ***")
           break  # Break out of the battle
-
-
-
-
       # enemy turn
       time.sleep(1.5)
       print(f"\nThe {current_enemy['name']} attacks you!")
@@ -453,21 +338,13 @@ def attack(command):
       else:
           player_hp -= current_enemy["damage"]
           print(f"It dealt {current_enemy['damage']} damage! You have {player_hp} HP left.")
-
-
-
-
       # Check if you died
       if player_hp <= 0:
           print("\n*** You have been defeated... GAME OVER ***")
           break  # Ends the python thing
 
-
-
-
       time.sleep(1.5)
       print("-" * 30)
-
 
 # Start the game
 tutorial()
