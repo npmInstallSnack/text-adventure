@@ -237,21 +237,28 @@ def gameloop():
   global rubies
 
   while True:
+      # Stop game loop if dead
       if player_hp <= 0:
           break
+      # Prompt player to make an action and show health
       player_input = input("\n(" + str(player_hp) + " HP) Choose an action: ")
       command = parse(player_input)
+      # Repeat loop if unknown action
       if not command['action']:
-          print("I don't understand that command. Try 'attack goblin' or 'quit'.")
+          print("Unknown command. Try 'attack goblin' or 'quit'.")
           continue
+      # Quitting
       if command['action'] == 'quit':
           print("Thanks for playing!")
           break
+      # Call Woody's ppr when attacking
       elif command['action'] == 'attack':
           attack(command)
+      # Call Jack's ppr for movement
       elif command['action'] == 'move':
           print("You move " + str(command["target"]))
           move(command['target'])
+      # Drop items to discard them
       elif command['action'] == 'drop':
           if command['item'] is None:
               print("You don't have that.")
@@ -262,6 +269,7 @@ def gameloop():
               elif command['item'] in inventory:
                 print("You drop your " + command['item']['weapon'])
                 inventory.remove(command['item'])
+      # View player inventory: weapons, food items, and ruby count
       elif command['action'] == 'inventory':
           print("\nYou have " + str(len(inventory)) + " weapons:")
           for weapon in inventory:
@@ -270,6 +278,7 @@ def gameloop():
           for item in food:
               print(f"- {item['food']} (heals {item['heal']} HP)")
           print("\nYou have " + str(rubies) + " rubies.")
+      # Consumables
       elif command['action'] == 'eat':
           if command['item'] is None:
               print("You don't have that.")
@@ -277,20 +286,23 @@ def gameloop():
               print("You consume your " + command["item"]["food"] + ", healing " + str(command["item"]["heal"]) + " HP.")
               player_hp += command["item"]["heal"]
               food.remove(command["item"])
+      # Village trading
       elif command['action'] == 'trade':
           if current_room == "village":
-              print("Two craftsmen offer their goods, one a mighty longsword for 9 rubies and the other a baked potato for 5 and a carrot for 2.")
+              print("Two craftsmen offer their goods, one a mighty longsword for 9 rubies and the other a baked potato for 5 and a carrot for 2. You have " + str(rubies) + " rubies.")
               purchase = input("What do you purchase? (one at a time)")
               if "sword" in purchase and rubies >= 9:
                 inventory.append({"weapon": "longsword", "damage": 5})
                 rubies -= 9
-                print("You purchased the mighty longsword, slayer of demons")
+                print("You purchase the mighty longsword, slayer of demons")
               elif "potato" in purchase and rubies >= 5:
                 food.append({"food": "baked potato", "heal": 9})
                 rubies -= 5
+                print("You buy a baked potato, a thorough meal for tasteful heros.")
               elif "carrot" in purchase and rubies >= 2:
                   food.append({"food": "carrot", "heal": 4})
                   rubies -= 2
+                  print("You purchase a carrot, a trusty snack for a good price.")
               elif "no" in purchase or "exit" in purchase or "quit" in purchase:
                   print("They ask you to come back soon")
               else:
@@ -310,9 +322,6 @@ def move(direction):
       new_room = True
   else:
       print("You can't go that way")
-
-
-
 
 #restart
 def restart():
